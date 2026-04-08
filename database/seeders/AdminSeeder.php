@@ -9,14 +9,23 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
-        // Menghapus data lama agar tidak duplikat saat dijalankan ulang
-        DB::table('petugas')->truncate();
+        // Cek apakah akun admin sudah ada, jika belum baru insert
+        $existing = DB::table('petugas')->where('nama', 'admin')->first();
 
-        DB::table('petugas')->insert([
-            'nama' => 'admin',
-            'password' => 'admin123', // Password disimpan apa adanya (Plain Text)
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        if (!$existing) {
+            DB::table('petugas')->insert([
+                'nama' => 'admin',
+                'password' => 'admin123',
+                'role' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else {
+            // Update role jika akun sudah ada tapi belum punya role admin
+            DB::table('petugas')->where('nama', 'admin')->update([
+                'role' => 'admin',
+                'updated_at' => now(),
+            ]);
+        }
     }
 }
