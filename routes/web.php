@@ -195,4 +195,8 @@ Route::prefix('dashboard')->group(function () {
     Route::get('/pengguna', [LoginController::class, 'kelolaPengguna'])->name('admin.pengguna');
     Route::post('/pengguna/status/{id}/{status}', [LoginController::class, 'statusPengguna'])->name('admin.pengguna.status');
     Route::delete('/pengguna/{id}', [LoginController::class, 'hapusPengguna'])->name('admin.pengguna.delete');
+
+    // LAPORAN
+    Route::get('/laporan', [LoginController::class, 'laporan'])->name('admin.laporan');
+    Route::get('/laporan/download', [LoginController::class, 'downloadLaporan'])->name('admin.laporan.download');
 });

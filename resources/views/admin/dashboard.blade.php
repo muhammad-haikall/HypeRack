@@ -89,6 +89,7 @@
             <a href="{{ route('admin.produk') }}" class="nav-item {{ Request::is('dashboard/produk*') ? 'active' : '' }}">Kelola Produk</a>
             <a href="{{ route('admin.kelolaorder') }}" class="nav-item {{ Request::is('dashboard/order*') ? 'active' : '' }}">Kelola Order</a>
             <a href="{{ route('admin.riwayat') }}" class="nav-item {{ Request::is('dashboard/riwayat*') ? 'active' : '' }}">Riwayat Pesanan</a>
+            <a href="{{ route('admin.laporan') }}" class="nav-item {{ Request::is('dashboard/laporan*') ? 'active' : '' }}">Laporan</a>
             @if(session('user_role') == 'admin')
             <a href="{{ route('admin.petugas') }}" class="nav-item {{ Request::is('dashboard/petugas*') ? 'active' : '' }}">Kelola Petugas</a>
             <a href="{{ route('admin.pengguna') }}" class="nav-item {{ Request::is('dashboard/pengguna*') ? 'active' : '' }}">Kelola Pengguna</a>

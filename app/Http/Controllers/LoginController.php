@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LoginController extends Controller
 {
@@ -785,6 +786,82 @@ public function logoutUser()
         DB::table('users')->where('id', $userId)->update(['alamat' => $address]);
         
         return back()->with('success', 'Alamat berhasil diperbarui!');
+    }
+
+    public function laporan(Request $request)
+    {
+        $this->checkLogin();
+
+        $bulan = $request->get('bulan', date('m'));
+        $tahun = $request->get('tahun', date('Y'));
+
+        // Pemasukan: Barang yang ditambahkan ke stok (Produk baru/update)
+        $pemasukan = DB::table('produk')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Penjualan (sebelumnya Pengeluaran): Pesanan yang diproses (Order)
+        $penjualan = DB::table('order')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Laporan Keuangan: Total Pendapatan dari Order (biasanya yang sudah selesai)
+        $totalPendapatan = DB::table('order')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->where('status', 'selesai')
+            ->sum('total_harga');
+
+        $totalPesanan = DB::table('order')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->count();
+
+        $view = Session::get('user_role') == 'petugas' ? 'petugas.laporan' : 'admin.laporan';
+        return view($view, compact('pemasukan', 'penjualan', 'totalPendapatan', 'totalPesanan', 'bulan', 'tahun'));
+    }
+
+    public function downloadLaporan(Request $request)
+    {
+        $this->checkLogin();
+
+        $bulan = $request->get('bulan', date('m'));
+        $tahun = $request->get('tahun', date('Y'));
+
+        $pemasukan = DB::table('produk')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        $penjualan = DB::table('order')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalPendapatan = DB::table('order')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)
+            ->where('status', 'selesai')
+            ->sum('total_harga');
+
+        $data = [
+            'pemasukan' => $pemasukan,
+            'penjualan' => $penjualan,
+            'totalPendapatan' => $totalPendapatan,
+            'title' => 'Laporan Bulanan HyperRack',
+            'date' => date('d/m/Y'),
+            'bulanText' => date('F', mktime(0, 0, 0, $bulan, 1)),
+            'tahun' => $tahun
+        ];
+
+        $pdf = Pdf::loadView('admin.laporan_pdf', $data);
+        return $pdf->download('laporan-hyperrack-' . $tahun . '-' . $bulan . '.pdf');
     }
 
 }
